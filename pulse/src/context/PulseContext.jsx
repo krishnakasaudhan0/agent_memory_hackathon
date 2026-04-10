@@ -1,0 +1,180 @@
+import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import { seedIncidents } from '../data/seedData';
+import hindsightMemory from '../services/hindsightMemory';
+
+const PulseContext = createContext();
+
+const initialState = {
+  incidents: seedIncidents,
+  memoryInitialized: false,
+  memoryLoading: false,
+  cloudConnected: false,
+  aiDiagnosis: {},
+  notifications: [],
+  memoryScore: 0,
+  totalMemories: 0,
+};
+
+function pulseReducer(state, action) {
+  switch (action.type) {
+    case 'SET_INCIDENTS':
+      return { ...state, incidents: action.payload };
+    case 'ADD_INCIDENT':
+      return { ...state, incidents: [action.payload, ...state.incidents] };
+    case 'UPDATE_INCIDENT':
+      return {
+        ...state,
+        incidents: state.incidents.map(i =>
+          i.id === action.payload.id ? { ...i, ...action.payload } : i
+        )
+      };
+    case 'SET_MEMORY_INITIALIZED':
+      return { ...state, memoryInitialized: action.payload };
+    case 'SET_CLOUD_CONNECTED':
+      return { ...state, cloudConnected: action.payload };
+    case 'SET_MEMORY_LOADING':
+      return { ...state, memoryLoading: action.payload };
+    case 'SET_AI_DIAGNOSIS':
+      return {
+        ...state,
+        aiDiagnosis: { ...state.aiDiagnosis, [action.payload.incidentId]: action.payload.data }
+      };
+    case 'ADD_NOTIFICATION':
+      return {
+        ...state,
+        notifications: [action.payload, ...state.notifications].slice(0, 20)
+      };
+    case 'SET_MEMORY_SCORE':
+      return { ...state, memoryScore: action.payload };
+    case 'SET_TOTAL_MEMORIES':
+      return { ...state, totalMemories: action.payload };
+    default:
+      return state;
+  }
+}
+
+export function PulseProvider({ children }) {
+  const [state, dispatch] = useReducer(pulseReducer, initialState);
+
+  // Initialize Hindsight memory on mount
+  useEffect(() => {
+    async function init() {
+      dispatch({ type: 'SET_MEMORY_LOADING', payload: true });
+      try {
+        await hindsightMemory.initialize();
+        // Retain all resolved seed incidents
+        const resolved = seedIncidents.filter(i => i.status === 'resolved');
+        await hindsightMemory.retainAllIncidents(resolved);
+        dispatch({ type: 'SET_MEMORY_INITIALIZED', payload: true });
+        dispatch({ type: 'SET_CLOUD_CONNECTED', payload: hindsightMemory.cloudAvailable });
+        dispatch({ type: 'SET_MEMORY_SCORE', payload: Math.min(resolved.length * 12, 87) });
+        dispatch({ type: 'SET_TOTAL_MEMORIES', payload: resolved.length });
+        dispatch({
+          type: 'ADD_NOTIFICATION',
+          payload: {
+            id: Date.now(),
+            type: 'success',
+            message: `AI memory loaded: ${resolved.length} incidents retained`,
+            time: new Date().toISOString()
+          }
+        });
+      } catch (err) {
+        console.error('Memory init error:', err);
+      }
+      dispatch({ type: 'SET_MEMORY_LOADING', payload: false });
+    }
+    init();
+  }, []);
+
+  const diagnoseIncident = useCallback(async (incident) => {
+    dispatch({ type: 'SET_MEMORY_LOADING', payload: true });
+    try {
+      const diagnosis = await hindsightMemory.diagnoseIncident(incident);
+      dispatch({
+        type: 'SET_AI_DIAGNOSIS',
+        payload: { incidentId: incident.id, data: diagnosis }
+      });
+      return diagnosis;
+    } catch (err) {
+      console.error('Diagnosis error:', err);
+      return null;
+    } finally {
+      dispatch({ type: 'SET_MEMORY_LOADING', payload: false });
+    }
+  }, []);
+
+  const retainIncident = useCallback(async (incident) => {
+    try {
+      await hindsightMemory.retainIncident(incident);
+      dispatch({
+        type: 'SET_MEMORY_SCORE',
+        payload: Math.min(state.memoryScore + 8, 95)
+      });
+      dispatch({
+        type: 'SET_TOTAL_MEMORIES',
+        payload: state.totalMemories + 1
+      });
+    } catch (err) {
+      console.error('Retain error:', err);
+    }
+  }, [state.memoryScore, state.totalMemories]);
+
+  const addIncident = useCallback((incident) => {
+    const newIncident = {
+      ...incident,
+      id: `INC-${String(state.incidents.length + 1).padStart(3, '0')}`,
+      status: 'detected',
+      detectedAt: new Date().toISOString(),
+      resolvedAt: null,
+      timeline: [
+        {
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+          event: 'Incident detected and reported',
+          type: 'alert'
+        }
+      ]
+    };
+    dispatch({ type: 'ADD_INCIDENT', payload: newIncident });
+    // Auto-diagnose
+    diagnoseIncident(newIncident);
+    return newIncident;
+  }, [state.incidents.length, diagnoseIncident]);
+
+  const updateIncident = useCallback((updates) => {
+    dispatch({ type: 'UPDATE_INCIDENT', payload: updates });
+    // If resolved, retain in memory
+    if (updates.status === 'resolved') {
+      const incident = state.incidents.find(i => i.id === updates.id);
+      if (incident) {
+        retainIncident({ ...incident, ...updates });
+      }
+    }
+  }, [state.incidents, retainIncident]);
+
+  const reflectOnQuery = useCallback(async (query) => {
+    try {
+      return await hindsightMemory.reflect(query);
+    } catch (err) {
+      console.error('Reflect error:', err);
+      return { text: 'Unable to reflect at this time.' };
+    }
+  }, []);
+
+  const value = {
+    ...state,
+    dispatch,
+    addIncident,
+    updateIncident,
+    diagnoseIncident,
+    retainIncident,
+    reflectOnQuery
+  };
+
+  return <PulseContext.Provider value={value}>{children}</PulseContext.Provider>;
+}
+
+export function usePulse() {
+  const context = useContext(PulseContext);
+  if (!context) throw new Error('usePulse must be used within PulseProvider');
+  return context;
+}
