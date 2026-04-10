@@ -6,7 +6,16 @@ https://github.com/krishnakasaudhan0/agent_memory_hackathon/raw/main/assets/demo
 
 *(If the video player does not load, [click here to view or download the demo](https://github.com/krishnakasaudhan0/agent_memory_hackathon/raw/main/assets/demo.mp4))*
 
-Pulse is an intelligent, real-time incident command center designed to drastically reduce Mean Time To Resolution (MTTR). By acting as a persistent AI memory layer for your infrastructure, Pulse intercepts incoming alerts from monitoring tools (PagerDuty, Datadog, Sentry), cross-references them against prior resolved incidents, and automatically diagnoses the root cause and suggests proven fixes.
+Pulse is an AI assistant for engineers that acts like a highly experienced team member who instantly remembers how to fix broken systems.
+
+Whenever a company's app or website breaks, it creates an "incident." Normally, engineers have to scramble, dig through logs, and try to figure out what went wrong and how to fix it.
+
+Here is what Pulse does to make this much easier:
+
+Catches the Alarm: It connects to standard monitoring tools (like PagerDuty or Sentry). The second a system breaks, Pulse catches the alert automatically in real-time.
+Uses AI "Memory": Every time an engineering team fixes a bug or an incident, Pulse saves the "root cause" and the "fix" into its permanent AI memory bank.
+Diagnoses the Problem Instantly: When a new alert comes in, Pulse immediately scans its AI memory to see if a similar issue has ever happened before.
+Suggests the Fix: Instead of engineers starting from scratch, Pulse instantly tells them: "I've seen this before. Last time this happened, it was caused by [Issue X], and here is the exact playbook you used to fix it."
 
 ## Key Features
 
