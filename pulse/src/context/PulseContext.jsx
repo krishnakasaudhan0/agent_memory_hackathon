@@ -4,7 +4,24 @@ import hindsightMemory from '../services/hindsightMemory';
 
 const PulseContext = createContext();
 
-const initialState = {
+// Load seed data or from localStorage
+const loadInitialState = () => {
+  const savedState = localStorage.getItem('pulse_state');
+  if (savedState) {
+    try {
+      const parsed = JSON.parse(savedState);
+      return {
+        ...initialStateDefault,
+        incidents: parsed.incidents || seedIncidents
+      };
+    } catch (e) {
+      console.warn('Failed to parse local storage', e);
+    }
+  }
+  return initialStateDefault;
+};
+
+const initialStateDefault = {
   incidents: seedIncidents,
   memoryInitialized: false,
   memoryLoading: false,
@@ -54,7 +71,12 @@ function pulseReducer(state, action) {
 }
 
 export function PulseProvider({ children }) {
-  const [state, dispatch] = useReducer(pulseReducer, initialState);
+  const [state, dispatch] = useReducer(pulseReducer, initialStateDefault, loadInitialState);
+
+  // Sync incidents to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('pulse_state', JSON.stringify({ incidents: state.incidents }));
+  }, [state.incidents]);
 
   // Initialize Hindsight memory on mount
   useEffect(() => {
@@ -62,8 +84,8 @@ export function PulseProvider({ children }) {
       dispatch({ type: 'SET_MEMORY_LOADING', payload: true });
       try {
         await hindsightMemory.initialize();
-        // Retain all resolved seed incidents
-        const resolved = seedIncidents.filter(i => i.status === 'resolved');
+        // Retain only resolved incidents that haven't been retained yet
+        const resolved = state.incidents.filter(i => i.status === 'resolved');
         await hindsightMemory.retainAllIncidents(resolved);
         dispatch({ type: 'SET_MEMORY_INITIALIZED', payload: true });
         dispatch({ type: 'SET_CLOUD_CONNECTED', payload: hindsightMemory.cloudAvailable });
