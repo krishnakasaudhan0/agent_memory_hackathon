@@ -3,7 +3,7 @@
 
 const HINDSIGHT_BASE_URL = '/api/hindsight';
 const API_KEY = import.meta.env.VITE_HINDSIGHT_API_KEY || 'hsk_11dec262213123be799162b72fb93d3e_11b1e1fe608a73b5';
-const BANK_ID = 'pulse-incidents';
+const BANK_ID = 'pulse-incidents-demo-2';
 
 class HindsightMemory {
   constructor() {

@@ -9,13 +9,15 @@ const PulseContext = createContext();
 
 // Load seed data or from localStorage
 const loadInitialState = () => {
-  const savedState = localStorage.getItem('pulse_state');
+  const savedState = localStorage.getItem('pulse_state_final');
   if (savedState) {
     try {
       const parsed = JSON.parse(savedState);
+      const allIncidents = [...(parsed.incidents || []), ...seedIncidents];
+      const uniqueIncidents = Array.from(new Map(allIncidents.map(item => [item.id, item])).values());
       return {
         ...initialStateDefault,
-        incidents: parsed.incidents || seedIncidents
+        incidents: uniqueIncidents
       };
     } catch (e) {
       console.warn('Failed to parse local storage', e);
@@ -79,39 +81,35 @@ export function PulseProvider({ children }) {
 
   // Sync to local storage to prevent data loss on refresh during testing/demo
   useEffect(() => {
-    localStorage.setItem('pulse_state', JSON.stringify({ incidents: state.incidents }));
+    localStorage.setItem('pulse_state_final', JSON.stringify({ incidents: state.incidents }));
   }, [state.incidents]);
 
   // Load from Firebase when user logs in
   useEffect(() => {
-    async function loadUserIncidents() {
-      if (user) {
-        try {
-          const docRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(docRef);
-          
-          if (docSnap.exists() && docSnap.data().incidents) {
-            dispatch({ type: 'SET_INCIDENTS', payload: docSnap.data().incidents });
-          } else {
-            // New user, populate with seed data
-            await setDoc(docRef, { incidents: seedIncidents });
-            dispatch({ type: 'SET_INCIDENTS', payload: seedIncidents });
-          }
-        } catch (error) {
-          console.error("Error loading incidents from Firebase", error);
-        }
-      }
-    }
-    loadUserIncidents();
+    // Disabled for Demo to allow "Zero Data" state!
+    // async function loadUserIncidents() {
+    //   if (user) {
+    //     try {
+    //       const docRef = doc(db, 'users', user.uid);
+    //       const docSnap = await getDoc(docRef);
+    //       if (docSnap.exists() && docSnap.data().incidents) {
+    //         dispatch({ type: 'SET_INCIDENTS', payload: docSnap.data().incidents });
+    //       } else {
+    //         await setDoc(docRef, { incidents: seedIncidents });
+    //         dispatch({ type: 'SET_INCIDENTS', payload: seedIncidents });
+    //       }
+    //     } catch (error) { console.error("Error loading incidents from Firebase", error); }
+    //   }
+    // }
+    // loadUserIncidents();
   }, [user]);
 
   // Sync incidents to Firebase whenever they change
   useEffect(() => {
-    if (user && state.incidents.length > 0) {
-      // Small debounce could go here, but straightforward saving for MVP
-      setDoc(doc(db, 'users', user.uid), { incidents: state.incidents }, { merge: true })
-        .catch(err => console.error("Firebase sync error", err));
-    }
+    // Disabled for Demo to allow "Zero Data" state
+    // if (user && state.incidents.length > 0) {
+    //   setDoc(doc(db, 'users', user.uid), { incidents: state.incidents }, { merge: true })
+    // }
   }, [state.incidents, user]);
 
   // Initialize Hindsight memory on mount
