@@ -1,6 +1,9 @@
 import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { seedIncidents } from '../data/seedData';
 import hindsightMemory from '../services/hindsightMemory';
+import { db } from '../services/firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { useAuth } from './AuthContext';
 
 const PulseContext = createContext();
 
@@ -71,12 +74,40 @@ function pulseReducer(state, action) {
 }
 
 export function PulseProvider({ children }) {
-  const [state, dispatch] = useReducer(pulseReducer, initialStateDefault, loadInitialState);
+  const { user } = useAuth();
+  const [state, dispatch] = useReducer(pulseReducer, initialStateDefault); // Removed localStorage loader
 
-  // Sync incidents to localStorage whenever they change
+  // Load from Firebase when user logs in
   useEffect(() => {
-    localStorage.setItem('pulse_state', JSON.stringify({ incidents: state.incidents }));
-  }, [state.incidents]);
+    async function loadUserIncidents() {
+      if (user) {
+        try {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists() && docSnap.data().incidents) {
+            dispatch({ type: 'SET_INCIDENTS', payload: docSnap.data().incidents });
+          } else {
+            // New user, populate with seed data
+            await setDoc(docRef, { incidents: seedIncidents });
+            dispatch({ type: 'SET_INCIDENTS', payload: seedIncidents });
+          }
+        } catch (error) {
+          console.error("Error loading incidents from Firebase", error);
+        }
+      }
+    }
+    loadUserIncidents();
+  }, [user]);
+
+  // Sync incidents to Firebase whenever they change
+  useEffect(() => {
+    if (user && state.incidents.length > 0) {
+      // Small debounce could go here, but straightforward saving for MVP
+      setDoc(doc(db, 'users', user.uid), { incidents: state.incidents }, { merge: true })
+        .catch(err => console.error("Firebase sync error", err));
+    }
+  }, [state.incidents, user]);
 
   // Initialize Hindsight memory on mount
   useEffect(() => {
