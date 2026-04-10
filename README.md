@@ -2,9 +2,9 @@
 
 ## Demo
 
-<video src="./assets/demo.mp4" controls="controls" muted="muted" width="100%">
-  Your browser does not support the video tag. <a href="./assets/demo.mp4">Download the video here</a>.
-</video>
+https://github.com/krishnakasaudhan0/agent_memory_hackathon/raw/main/assets/demo.mp4
+
+*(If the video player does not load, [click here to view or download the demo](https://github.com/krishnakasaudhan0/agent_memory_hackathon/raw/main/assets/demo.mp4))*
 
 Pulse is an intelligent, real-time incident command center designed to drastically reduce Mean Time To Resolution (MTTR). By acting as a persistent AI memory layer for your infrastructure, Pulse intercepts incoming alerts from monitoring tools (PagerDuty, Datadog, Sentry), cross-references them against prior resolved incidents, and automatically diagnoses the root cause and suggests proven fixes.
 
