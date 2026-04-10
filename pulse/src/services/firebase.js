@@ -4,14 +4,14 @@ import { getFirestore, collection, doc, setDoc, getDocs, getDoc, query, where } 
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBA9_IHFWLa2CghMa-Pvp7T-MI3_eHTmBE",
-  authDomain: "ieee-psit.firebaseapp.com",
-  databaseURL: "https://ieee-psit-default-rtdb.firebaseio.com",
-  projectId: "ieee-psit",
-  storageBucket: "ieee-psit.firebasestorage.app",
-  messagingSenderId: "443971304218",
-  appId: "1:443971304218:web:7f1327ee742164a6164aa3",
-  measurementId: "G-P6BXPEZBMS"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBA9_IHFWLa2CghMa-Pvp7T-MI3_eHTmBE",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "ieee-psit.firebaseapp.com",
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://ieee-psit-default-rtdb.firebaseio.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "ieee-psit",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "ieee-psit.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "443971304218",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:443971304218:web:7f1327ee742164a6164aa3",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-P6BXPEZBMS"
 };
 
 // Initialize Firebase

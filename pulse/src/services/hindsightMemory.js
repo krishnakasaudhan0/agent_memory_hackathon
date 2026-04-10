@@ -2,7 +2,7 @@
 // Integrates with Hindsight Cloud for persistent incident memory
 
 const HINDSIGHT_BASE_URL = '/api/hindsight';
-const API_KEY = 'hsk_11dec262213123be799162b72fb93d3e_11b1e1fe608a73b5';
+const API_KEY = import.meta.env.VITE_HINDSIGHT_API_KEY || 'hsk_11dec262213123be799162b72fb93d3e_11b1e1fe608a73b5';
 const BANK_ID = 'pulse-incidents';
 
 class HindsightMemory {
@@ -118,7 +118,7 @@ class HindsightMemory {
 
   // ──────────────── DIAGNOSE ────────────────
   async diagnoseIncident(incident) {
-    const query = `New production incident: "${incident.title}". ${incident.description}. Affected services: ${incident.affectedServices.join(', ')}. Tags: ${incident.tags.join(', ')}. What similar incidents have we seen? What was the root cause? What fix worked?`;
+    const query = `New production incident: "${incident.title}". ${incident.description}. Affected services: ${(incident.affectedServices || []).join(', ')}. Tags: ${(incident.tags || []).join(', ')}. What similar incidents have we seen? What was the root cause? What fix worked?`;
 
     const [recallResults, reflection] = await Promise.all([
       this.recallSimilar(query),

@@ -59,7 +59,7 @@ const normalizePagerDuty = (payload) => {
     severity,
     status,
     affectedServices: incident.impacted_services?.map(s => s.name) || [],
-    createdAt: incident.created_at || new Date().toISOString()
+    detectedAt: incident.created_at || new Date().toISOString()
   };
 };
 
@@ -88,7 +88,7 @@ const normalizeDatadog = (payload) => {
     severity,
     status,
     affectedServices,
-    createdAt: payload.date_happened ? new Date(payload.date_happened * 1000).toISOString() : new Date().toISOString()
+    detectedAt: payload.date_happened ? new Date(payload.date_happened * 1000).toISOString() : new Date().toISOString()
   };
 };
 
@@ -105,17 +105,18 @@ const normalizeSentry = (payload) => {
     severity,
     status,
     affectedServices: issue.project?.slug ? [issue.project.slug] : [],
-    createdAt: issue.firstSeen || new Date().toISOString()
+    detectedAt: issue.firstSeen || new Date().toISOString()
   };
 };
 
 const buildIncident = (normalized) => {
   return {
     ...normalized,
+    tags: normalized.tags || [],
     id: `webhook-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     resolvedAt: normalized.status === 'resolved' ? new Date().toISOString() : null,
     timeline: [{
-      time: normalized.createdAt,
+      time: normalized.detectedAt,
       event: "Incident auto-ingested via webhook",
       author: "Pulse Webhook Agent"
     }],

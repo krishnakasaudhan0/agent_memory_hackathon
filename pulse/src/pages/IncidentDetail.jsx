@@ -87,7 +87,7 @@ export default function IncidentDetail() {
             <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: 'var(--space-2)' }}>Description</h3>
             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>{incident.description}</p>
             <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
-              {incident.tags.map(t => <span key={t} className="service-tag"><Tag size={10} style={{ marginRight: 4 }} />{t}</span>)}
+              {(incident.tags || []).map(t => <span key={t} className="service-tag"><Tag size={10} style={{ marginRight: 4 }} />{t}</span>)}
             </div>
           </div>
 

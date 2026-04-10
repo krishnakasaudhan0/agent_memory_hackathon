@@ -75,7 +75,12 @@ function pulseReducer(state, action) {
 
 export function PulseProvider({ children }) {
   const { user } = useAuth();
-  const [state, dispatch] = useReducer(pulseReducer, initialStateDefault); // Removed localStorage loader
+  const [state, dispatch] = useReducer(pulseReducer, loadInitialState()); // Restored localStorage loader
+
+  // Sync to local storage to prevent data loss on refresh during testing/demo
+  useEffect(() => {
+    localStorage.setItem('pulse_state', JSON.stringify({ incidents: state.incidents }));
+  }, [state.incidents]);
 
   // Load from Firebase when user logs in
   useEffect(() => {
@@ -117,7 +122,10 @@ export function PulseProvider({ children }) {
         await hindsightMemory.initialize();
         // Retain only resolved incidents that haven't been retained yet
         const resolved = state.incidents.filter(i => i.status === 'resolved');
-        await hindsightMemory.retainAllIncidents(resolved);
+        
+        // Run retention in the background so it doesn't block UI loading for 5+ seconds!
+        hindsightMemory.retainAllIncidents(resolved).catch(console.error);
+        
         dispatch({ type: 'SET_MEMORY_INITIALIZED', payload: true });
         dispatch({ type: 'SET_CLOUD_CONNECTED', payload: hindsightMemory.cloudAvailable });
         dispatch({ type: 'SET_MEMORY_SCORE', payload: Math.min(resolved.length * 12, 87) });
