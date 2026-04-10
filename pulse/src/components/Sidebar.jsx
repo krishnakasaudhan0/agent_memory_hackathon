@@ -1,15 +1,17 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { usePulse } from '../context/PulseContext';
 import { useAuth } from '../context/AuthContext';
+import { useWebhookIngestion } from '../hooks/useWebhookIngestion';
 import {
   Activity, LayoutDashboard, AlertTriangle, BookOpen,
-  BarChart3, Plus, Brain, Zap, LogOut
+  BarChart3, Plus, Brain, Zap, LogOut, Radio
 } from 'lucide-react';
 
 export default function Sidebar() {
   const { incidents, memoryInitialized, memoryScore, cloudConnected } = usePulse();
   const { logout, user } = useAuth();
   const location = useLocation();
+  const { webhookConnected } = useWebhookIngestion();
   const activeCount = incidents.filter(i => i.status !== 'resolved').length;
 
   return (
@@ -69,6 +71,17 @@ export default function Sidebar() {
             </button>
           </div>
         )}
+        
+        <div className="ai-status" style={{ marginBottom: '8px' }}>
+          <div className="ai-status-dot" style={{
+            background: webhookConnected ? '#10b981' : '#6b7280'
+          }} />
+          <div className="ai-status-text">
+            <span><Radio size={10} style={{ display: 'inline', marginRight: 4 }} />Webhooks</span>
+            <span>{webhookConnected ? 'Live Ingestion' : 'Manual Mode'}</span>
+          </div>
+        </div>
+
         <div className="ai-status">
           <div className="ai-status-dot" style={{
             background: memoryInitialized ? (cloudConnected ? '#10b981' : '#f59e0b') : '#ef4444'
