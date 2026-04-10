@@ -13,17 +13,22 @@ export default function KnowledgeBase() {
   // Group by tags
   const tagGroups = {};
   resolved.forEach(i => {
-    i.tags.forEach(t => {
+    const tags = i.tags || [];
+    tags.forEach(t => {
       if (!tagGroups[t]) tagGroups[t] = [];
       tagGroups[t].push(i);
     });
   });
 
-  const filtered = resolved.filter(i =>
-    !search || i.title.toLowerCase().includes(search.toLowerCase()) ||
-    i.rootCause.toLowerCase().includes(search.toLowerCase()) ||
-    i.tags.some(t => t.includes(search.toLowerCase()))
-  );
+  const filtered = resolved.filter(i => {
+    const s = search.toLowerCase();
+    const tags = i.tags || [];
+    const rootCause = i.rootCause || '';
+    return !search || 
+      (i.title && i.title.toLowerCase().includes(s)) ||
+      rootCause.toLowerCase().includes(s) ||
+      tags.some(t => t.toLowerCase().includes(s));
+  });
 
   return (
     <div className="animate-in">
@@ -53,7 +58,7 @@ export default function KnowledgeBase() {
         {filtered.map(incident => (
           <div key={incident.id} className="knowledge-card" onClick={() => navigate(`/incidents/${incident.id}`)}>
             <div className="knowledge-card-header">
-              <span className={`severity-badge ${incident.severity.toLowerCase()}`}>{incident.severity}</span>
+              <span className={`severity-badge ${(incident.severity || 'p3').toLowerCase()}`}>{incident.severity || 'P3'}</span>
               <span className="knowledge-count">{incident.id}</span>
             </div>
             <h3>{incident.title}</h3>
@@ -65,7 +70,7 @@ export default function KnowledgeBase() {
             </div>
             <div className="knowledge-card-footer">
               <div className="knowledge-card-tags">
-                {incident.tags.slice(0, 3).map(t => <span key={t} className="knowledge-tag">{t}</span>)}
+                {(incident.tags || []).slice(0, 3).map(t => <span key={t} className="knowledge-tag">{t}</span>)}
               </div>
               <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
             </div>

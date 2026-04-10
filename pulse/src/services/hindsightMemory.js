@@ -196,11 +196,11 @@ class HindsightMemory {
       : 'unknown';
     return `INCIDENT ${incident.id}: ${incident.title}
 Severity: ${incident.severity} | Status: ${incident.status}
-Services: ${incident.affectedServices.join(', ')}
-Tags: ${incident.tags.join(', ')}
+Services: ${(incident.affectedServices || []).join(', ')}
+Tags: ${(incident.tags || []).join(', ')}
 Duration: ${duration} minutes
 Description: ${incident.description}
-Timeline: ${incident.timeline.map(t => `[${t.time}] ${t.event}`).join(' | ')}
+Timeline: ${(incident.timeline || []).map(t => `[${t.time}] ${t.event}`).join(' | ')}
 Root Cause: ${incident.rootCause || 'Not identified'}
 Resolution: ${incident.resolution || 'Not resolved'}
 Lessons: ${incident.lessonsLearned || 'Pending'}`;
