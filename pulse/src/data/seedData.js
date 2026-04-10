@@ -92,8 +92,25 @@ export const seedIncidents = [
   }
 ];
 
-export const mttrTrend = [];
+export const mttrTrend = [
+  { month: 'Jan', mttr: 145 },
+  { month: 'Feb', mttr: 120 },
+  { month: 'Mar', mttr: 105 },
+  { month: 'Apr', mttr: 85 },
+  { month: 'May', mttr: 60 },
+  { month: 'Jun', mttr: 42 }
+];
 
-export const incidentsByService = [];
+export const incidentsByService = [
+  { name: 'api-gateway', count: 14, color: '#ef4444' },
+  { name: 'payment-db', count: 9, color: '#f59e0b' },
+  { name: 'user-auth', count: 6, color: '#3b82f6' },
+  { name: 'search-index', count: 4, color: '#8b5cf6' },
+];
 
-export const rootCauseDistribution = [];
+export const rootCauseDistribution = [
+  { name: 'Code Bug', value: 40, color: '#ef4444' },
+  { name: 'Config', value: 30, color: '#f59e0b' },
+  { name: 'Infra', value: 20, color: '#3b82f6' },
+  { name: 'Third-Party', value: 10, color: '#10b981' },
+];
