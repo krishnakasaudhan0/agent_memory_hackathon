@@ -1,5 +1,11 @@
 # Pulse: AI-Powered Incident Response Agent
 
+## Demo
+
+<video src="./assets/demo.mov" controls="controls" muted="muted" width="100%">
+  Your browser does not support the video tag. <a href="./assets/demo.mov">Download the video here</a>.
+</video>
+
 Pulse is an intelligent, real-time incident command center designed to drastically reduce Mean Time To Resolution (MTTR). By acting as a persistent AI memory layer for your infrastructure, Pulse intercepts incoming alerts from monitoring tools (PagerDuty, Datadog, Sentry), cross-references them against prior resolved incidents, and automatically diagnoses the root cause and suggests proven fixes.
 
 ## Key Features
