@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Activity, Github } from 'lucide-react';
+import { Activity, LogIn } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [error, setError] = useState(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -12,14 +13,17 @@ export default function Login() {
       setIsLoggingIn(true);
       setError(null);
       await login();
-      // Router will naturally redirect us since App.jsx listens to user state
     } catch (err) {
       console.error(err);
-      setError("Failed to sign in. In a real app, please ensure your Firebase config is set in src/services/firebase.js");
+      setError("Failed to sign in. Please verify your Firebase configuration.");
     } finally {
       setIsLoggingIn(false);
     }
   };
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="login-container">
@@ -42,9 +46,9 @@ export default function Login() {
             className="btn btn-primary login-btn" 
             onClick={handleLogin}
             disabled={isLoggingIn}
-            style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
+            style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
           >
-            <Github size={18} />
+            <LogIn size={18} />
             {isLoggingIn ? "Authenticating..." : "Sign in with Google"}
           </button>
         </div>
